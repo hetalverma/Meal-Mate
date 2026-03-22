@@ -59,6 +59,10 @@ const AiMealPlanSuggestionsOutputSchema = z.object({
               briefDescription: z
                 .string()
                 .describe('A brief description of the meal and its ingredients.'),
+              calories: z.number().describe('Estimated calories for this meal.'),
+              protein: z.number().describe('Estimated protein in grams.'),
+              carbs: z.number().describe('Estimated carbs in grams.'),
+              prepTimeMinutes: z.number().describe('Estimated prep time in minutes.'),
             })
           )
           .describe('A list of meals for the day.'),
@@ -92,7 +96,7 @@ Cuisine Preferences: {{#if cuisinePreferences}}{{#each cuisinePreferences}}- {{{
 {{/each}}{{else}}None specified.{{/if}}
 
 Generate a detailed weekly meal plan, from Monday to Sunday, that adheres to the user's diet goals and stays within the specified grocery budget.
-For each meal (Breakfast, Lunch, Dinner, and optionally 1-2 Snacks per day), suggest a recipe name, a brief description of the meal, and an estimated cost for that single meal.
+For each meal (Breakfast, Lunch, Dinner, and optionally 1-2 Snacks per day), suggest a recipe name, a brief description, an estimated cost, calories, protein (g), carbs (g), and prep time (minutes).
 Ensure the total estimated cost for the entire week does not exceed the grocery budget.
 Provide a brief explanation of how the plan meets their goals and budget.
 

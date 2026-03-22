@@ -5,13 +5,39 @@ import { GlobalHeader } from "@/components/global-header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Plus, MoreVertical, Calendar as CalendarIcon, Loader2 } from "lucide-react";
+import { 
+  Sparkles, 
+  Plus, 
+  MoreVertical, 
+  Calendar as CalendarIcon, 
+  Loader2, 
+  Clock, 
+  Flame, 
+  Beef, 
+  Wheat,
+  Copy,
+  LayoutTemplate
+} from "lucide-react";
 import { aiMealPlanSuggestions, type AiMealPlanSuggestionsOutput } from "@/ai/flows/ai-meal-plan-suggestions";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAYS = [
+  { full: "Monday", short: "Mon" },
+  { full: "Tuesday", short: "Tue" },
+  { full: "Wednesday", short: "Wed" },
+  { full: "Thursday", short: "Thu" },
+  { full: "Friday", short: "Fri" },
+  { full: "Saturday", short: "Sat" },
+  { full: "Sunday", short: "Sun" },
+];
+
+const TEMPLATES = [
+  { name: "Lazy Sunday", color: "bg-blue-100 text-blue-700" },
+  { name: "Gym Day", color: "bg-orange-100 text-orange-700" },
+  { name: "Clean Eating", color: "bg-green-100 text-green-700" },
+];
 
 export default function PlannerPage() {
   const { toast } = useToast();
@@ -33,8 +59,8 @@ export default function PlannerPage() {
       
       setAiPlan(result);
       toast({
-        title: "Meal Plan Generated!",
-        description: `Total estimated cost: $${result.totalEstimatedCost}`,
+        title: "Weekly Shuffle Complete!",
+        description: `New 7-day plan generated for $${result.totalEstimatedCost}`,
       });
     } catch (error) {
       toast({
@@ -47,101 +73,198 @@ export default function PlannerPage() {
     }
   };
 
-  const currentDayMeals = aiPlan?.weeklyPlan.find(d => d.day.startsWith(activeDay))?.meals || [];
+  const currentDayData = aiPlan?.weeklyPlan.find(d => d.day.startsWith(activeDay));
+  const currentDayMeals = currentDayData?.meals || [];
+  
+  const totalPrepTime = currentDayMeals.reduce((acc, m) => acc + (m.prepTimeMinutes || 0), 0);
+  const totalCalories = currentDayMeals.reduce((acc, m) => acc + (m.calories || 0), 0);
 
   return (
     <div className="min-h-screen pb-24 bg-background">
       <GlobalHeader title="Planner" />
       
       <main className="p-4 space-y-6 max-w-md mx-auto">
+        {/* WEEK VIEW HEADER */}
         <section className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CalendarIcon className="h-5 w-5 text-primary" />
-            <h2 className="text-xl font-bold">This Week</h2>
+            <h2 className="text-xl font-bold font-headline">Week View</h2>
           </div>
           <Button 
             onClick={generateAIPlan} 
             disabled={loading}
             size="sm" 
-            className="rounded-full bg-secondary hover:bg-secondary/90 shadow-md flex gap-2"
+            variant="outline"
+            className="rounded-full shadow-sm flex gap-2 border-primary/20 text-primary hover:bg-primary/5"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-            AI Suggest
+            Weekly Shuffle
           </Button>
         </section>
 
+        {/* 4-7 DAY DRAG-AND-DROP SIMULATED GRID */}
         <section>
-          <div className="flex justify-between gap-1 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
-            {DAYS.map((day) => (
-              <Button
-                key={day}
-                variant={activeDay === day ? "default" : "outline"}
-                className={activeDay === day ? "bg-primary" : ""}
-                size="sm"
-                onClick={() => setActiveDay(day)}
-              >
-                {day}
-              </Button>
-            ))}
+          <div className="flex justify-between gap-1 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+            {DAYS.map((day) => {
+              const dayPlan = aiPlan?.weeklyPlan.find(d => d.day.startsWith(day.short));
+              const mealCount = dayPlan?.meals.length || 0;
+              
+              return (
+                <div key={day.short} className="flex flex-col items-center gap-1.5 min-w-[3.5rem]">
+                  <Button
+                    variant={activeDay === day.short ? "default" : "outline"}
+                    className={cn(
+                      "w-12 h-12 rounded-2xl flex flex-col items-center justify-center p-0 transition-all",
+                      activeDay === day.short ? "bg-primary shadow-lg scale-110" : "border-muted-foreground/10"
+                    )}
+                    onClick={() => setActiveDay(day.short)}
+                  >
+                    <span className="text-[10px] font-bold uppercase opacity-70">{day.short[0]}</span>
+                    <span className="text-sm font-bold">{day.short.slice(1)}</span>
+                  </Button>
+                  {/* Meal count dot indicators */}
+                  <div className="flex gap-0.5 h-1">
+                    {[...Array(mealCount)].map((_, i) => (
+                      <div key={i} className="w-1 h-1 rounded-full bg-primary/40" />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </section>
 
+        {/* DAY DETAIL SUMMARY */}
+        {currentDayMeals.length > 0 && !loading && (
+          <section className="grid grid-cols-2 gap-3">
+            <Card className="border-none bg-muted/30 shadow-none">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-primary shadow-sm">
+                  <Clock className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Prep Time</p>
+                  <p className="text-sm font-bold">{totalPrepTime} min</p>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="border-none bg-muted/30 shadow-none">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-white flex items-center justify-center text-orange-500 shadow-sm">
+                  <Flame className="h-4 w-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Total Kcal</p>
+                  <p className="text-sm font-bold">{totalCalories}</p>
+                </div>
+              </CardContent>
+            </Card>
+          </section>
+        )}
+
+        {/* MEAL SLOTS MANAGEMENT */}
         <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Day Detail</h3>
+            <div className="flex gap-2">
+               <Button variant="ghost" size="sm" className="h-6 text-[10px] font-bold uppercase text-primary p-0">
+                 <Copy className="h-3 w-3 mr-1" /> Copy Day
+               </Button>
+            </div>
+          </div>
+
           {loading ? (
             <div className="flex flex-col items-center justify-center py-20 text-muted-foreground gap-4">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p>Crafting your perfect meal plan...</p>
+              <p className="text-sm font-medium animate-pulse">Crafting your perfect meal plan...</p>
             </div>
           ) : currentDayMeals.length > 0 ? (
             <div className="space-y-4">
               {currentDayMeals.map((meal, idx) => (
-                <Card key={idx} className="border-none shadow-sm overflow-hidden group">
-                  <CardContent className="p-4 flex gap-4">
-                    <div className="flex flex-col items-center justify-center bg-muted w-16 h-16 rounded-lg text-[10px] font-bold uppercase text-muted-foreground shrink-0">
-                      {meal.mealType}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-sm truncate">{meal.recipeName}</h4>
-                        <Button variant="ghost" size="icon" className="h-6 w-6">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
+                <Card key={idx} className="border-none shadow-md overflow-hidden group hover:ring-2 ring-primary/20 transition-all">
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <div className="flex flex-col items-center justify-center bg-primary/5 w-16 h-16 rounded-2xl shrink-0 border border-primary/10">
+                        <span className="text-[9px] font-black uppercase text-primary/60">{meal.mealType}</span>
+                        <ChefIcon type={meal.mealType} />
                       </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1 mt-1">{meal.briefDescription}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge variant="secondary" className="text-[10px] py-0 px-1 bg-secondary/10 text-secondary border-none">
-                          ${meal.estimatedCost.toFixed(2)}
-                        </Badge>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start">
+                          <h4 className="font-bold text-sm truncate">{meal.recipeName}</h4>
+                          <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 mb-2">1 portion • {meal.briefDescription}</p>
+                        
+                        {/* PER-MEAL NUTRITION PREVIEW */}
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                            <Flame className="h-3 w-3 text-orange-400" /> {meal.calories}
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                            <Beef className="h-3 w-3 text-red-400" /> {meal.protein}g
+                          </div>
+                          <div className="flex items-center gap-1 text-[10px] font-bold text-muted-foreground">
+                            <Wheat className="h-3 w-3 text-yellow-500" /> {meal.carbs}g
+                          </div>
+                          <Badge variant="outline" className="ml-auto text-[8px] h-4 py-0 px-1 border-muted text-muted-foreground">
+                            ${meal.estimatedCost.toFixed(2)}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               ))}
-              <Button variant="ghost" className="w-full border-2 border-dashed border-muted hover:border-primary/30 text-muted-foreground h-16 flex gap-2">
+              <Button variant="ghost" className="w-full border-2 border-dashed border-muted hover:border-primary/30 text-muted-foreground h-14 rounded-2xl flex gap-2">
                 <Plus className="h-4 w-4" /> Add custom meal
               </Button>
             </div>
           ) : (
-            <div className="text-center py-12 border-2 border-dashed rounded-xl border-muted bg-muted/10">
+            <div className="text-center py-16 border-2 border-dashed rounded-3xl border-muted bg-muted/10">
               <Sparkles className="h-10 w-10 text-muted mx-auto mb-3" />
               <p className="text-muted-foreground text-sm font-medium">No meals planned for {activeDay}</p>
               <Button 
                 variant="link" 
-                className="text-primary mt-2"
+                className="text-primary mt-2 font-bold"
                 onClick={generateAIPlan}
               >
-                Let AI help you
+                Generate with AI
               </Button>
             </div>
           )}
         </section>
 
+        {/* TEMPLATES SECTION */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 px-1">
+            <LayoutTemplate className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Templates</h3>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {TEMPLATES.map((t) => (
+              <Button 
+                key={t.name}
+                variant="secondary" 
+                size="sm" 
+                className={cn("rounded-full text-[11px] font-bold shadow-sm whitespace-nowrap", t.color)}
+              >
+                {t.name}
+              </Button>
+            ))}
+            <Button variant="outline" size="sm" className="rounded-full h-8 w-8 p-0">
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+        </section>
+
         {aiPlan?.planExplanation && (
-          <section className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+          <section className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
             <h4 className="text-xs font-bold text-primary uppercase tracking-widest mb-2 flex items-center gap-2">
-              <Sparkles className="h-3 w-3" /> Plan Summary
+              <Sparkles className="h-3 w-3" /> AI Insight
             </h4>
-            <p className="text-sm text-muted-foreground leading-relaxed italic">
+            <p className="text-xs text-muted-foreground leading-relaxed italic">
               "{aiPlan.planExplanation}"
             </p>
           </section>
@@ -151,4 +274,13 @@ export default function PlannerPage() {
       <BottomNav />
     </div>
   );
+}
+
+function ChefIcon({ type }: { type: string }) {
+  const t = type.toLowerCase();
+  if (t.includes('breakfast')) return <span className="text-lg">🍳</span>;
+  if (t.includes('lunch')) return <span className="text-lg">🥗</span>;
+  if (t.includes('dinner')) return <span className="text-lg">🍖</span>;
+  if (t.includes('snack')) return <span className="text-lg">🍎</span>;
+  return <span className="text-lg">🍽️</span>;
 }
