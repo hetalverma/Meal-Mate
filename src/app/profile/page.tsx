@@ -74,9 +74,6 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold font-headline">Alex Miller</h2>
             <p className="text-sm text-muted-foreground">miller.alex@google.com</p>
           </div>
-          <Button variant="outline" size="sm" className="rounded-full mt-2 h-8 text-xs font-bold border-2">
-            Edit Profile
-          </Button>
         </section>
 
         {/* ACCOUNT SECTION */}
