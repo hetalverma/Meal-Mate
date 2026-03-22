@@ -24,13 +24,13 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const DAYS = [
-  { full: "Monday", short: "Mon" },
-  { full: "Tuesday", short: "Tue" },
-  { full: "Wednesday", short: "Wed" },
-  { full: "Thursday", short: "Thu" },
-  { full: "Friday", short: "Fri" },
-  { full: "Saturday", short: "Sat" },
-  { full: "Sunday", short: "Sun" },
+  { full: "Monday", short: "Mon", date: 24 },
+  { full: "Tuesday", short: "Tue", date: 25 },
+  { full: "Wednesday", short: "Wed", date: 26 },
+  { full: "Thursday", short: "Thu", date: 27 },
+  { full: "Friday", short: "Fri", date: 28 },
+  { full: "Saturday", short: "Sat", date: 29 },
+  { full: "Sunday", short: "Sun", date: 30 },
 ];
 
 const TEMPLATES = [
@@ -102,31 +102,51 @@ export default function PlannerPage() {
           </Button>
         </section>
 
-        {/* 4-7 DAY DRAG-AND-DROP SIMULATED GRID */}
+        {/* 7 DAY GRID - DATES & DAYS TOGETHER */}
         <section>
-          <div className="flex justify-between gap-1 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
+          <div className="flex justify-between gap-2 overflow-x-auto pb-4 scrollbar-hide -mx-1 px-1">
             {DAYS.map((day) => {
               const dayPlan = aiPlan?.weeklyPlan.find(d => d.day.startsWith(day.short));
               const mealCount = dayPlan?.meals.length || 0;
+              const isActive = activeDay === day.short;
               
               return (
-                <div key={day.short} className="flex flex-col items-center gap-1.5 min-w-[3.5rem]">
+                <div key={day.short} className="flex flex-col items-center gap-2 min-w-[3.5rem]">
                   <Button
-                    variant={activeDay === day.short ? "default" : "outline"}
+                    variant={isActive ? "default" : "outline"}
                     className={cn(
-                      "w-12 h-12 rounded-2xl flex flex-col items-center justify-center p-0 transition-all",
-                      activeDay === day.short ? "bg-primary shadow-lg scale-110" : "border-muted-foreground/10"
+                      "w-12 h-20 rounded-3xl flex flex-col items-center justify-center p-0 transition-all border-2",
+                      isActive 
+                        ? "bg-primary border-primary shadow-lg scale-105" 
+                        : "border-muted/50 bg-card hover:border-primary/30"
                     )}
                     onClick={() => setActiveDay(day.short)}
                   >
-                    <span className="text-[10px] font-bold uppercase opacity-70">{day.short[0]}</span>
-                    <span className="text-sm font-bold">{day.short.slice(1)}</span>
+                    <span className={cn(
+                      "text-[10px] font-bold uppercase tracking-tighter mb-1",
+                      isActive ? "text-primary-foreground/80" : "text-muted-foreground"
+                    )}>
+                      {day.short}
+                    </span>
+                    <span className={cn(
+                      "text-lg font-black leading-none",
+                      isActive ? "text-primary-foreground" : "text-foreground"
+                    )}>
+                      {day.date}
+                    </span>
                   </Button>
                   {/* Meal count dot indicators */}
-                  <div className="flex gap-0.5 h-1">
-                    {[...Array(mealCount)].map((_, i) => (
-                      <div key={i} className="w-1 h-1 rounded-full bg-primary/40" />
-                    ))}
+                  <div className="flex gap-1 h-1">
+                    {mealCount > 0 ? (
+                      [...Array(Math.min(mealCount, 4))].map((_, i) => (
+                        <div key={i} className={cn(
+                          "w-1 h-1 rounded-full",
+                          isActive ? "bg-primary" : "bg-muted-foreground/30"
+                        )} />
+                      ))
+                    ) : (
+                      <div className="w-1 h-1 rounded-full bg-transparent" />
+                    )}
                   </div>
                 </div>
               );
