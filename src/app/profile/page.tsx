@@ -7,16 +7,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ChevronRight, 
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
-  const avatarImg = PlaceHolderImages.find(img => img.id === 'avatar-user');
+  const avatarImg = PlaceHolderImages.find((img) => img.id === "avatar-user");
 
   const handleLogout = () => {
     localStorage.removeItem("mealmate_onboarded");
@@ -29,23 +27,26 @@ export default function ProfilePage() {
         {title}
       </h3>
       {count && (
-        <Badge variant="secondary" className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0">
+        <Badge
+          variant="secondary"
+          className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0"
+        >
           {count}
         </Badge>
       )}
     </div>
   );
 
-  const FeatureItem = ({ 
-    title, 
+  const FeatureItem = ({
+    title,
     dotColor = "bg-primary",
-    onClick
-  }: { 
-    title: string; 
+    onClick,
+  }: {
+    title: string;
     dotColor?: string;
     onClick?: () => void;
   }) => (
-    <div 
+    <div
       onClick={onClick}
       className="group flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors border-b last:border-0 relative cursor-pointer"
     >
@@ -62,7 +63,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen pb-24 bg-background">
       <GlobalHeader title="Profile" />
-      
+
       <main className="p-4 space-y-8 max-w-md mx-auto">
         {/* User Profile Summary */}
         <section className="flex flex-col items-center gap-3 py-4">
@@ -76,64 +77,64 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        {/* ACCOUNT SECTION */}
+        {/* 1. ACCOUNT SECTION */}
         <section className="space-y-1">
           <SectionHeader title="Account" />
           <Card className="border-none shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              <FeatureItem 
+              <FeatureItem
                 title="Profile management"
-                onClick={() => console.log("Navigate to Profile Management")}
-              />
-              <FeatureItem 
-                title="Notification preferences"
-                onClick={() => console.log("Navigate to Notification Preferences")}
-              />
-              <FeatureItem 
-                title="Roommate / sharing mode"
-                dotColor="bg-purple-500"
-                onClick={() => console.log("Navigate to Roommate Mode")}
+                onClick={() => router.push("/profile/account")}
               />
             </CardContent>
           </Card>
         </section>
 
-        {/* INTEGRATIONS SECTION */}
-        <section className="space-y-1">
-          <SectionHeader title="Integrations" />
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0">
-              <FeatureItem 
-                title="Google Calendar sync"
-                dotColor="bg-blue-500"
-                onClick={() => console.log("Navigate to Google Calendar Sync")}
-              />
-              <FeatureItem 
-                title="Apple Calendar + Siri"
-                dotColor="bg-blue-500"
-                onClick={() => console.log("Navigate to Apple Calendar")}
-              />
-              <FeatureItem 
-                title="WhatsApp shopping list share"
-                dotColor="bg-blue-500"
-                onClick={() => console.log("Navigate to WhatsApp Share")}
-              />
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* SETTINGS SECTION */}
+        {/* 2. SETTINGS SECTION */}
         <section className="space-y-1">
           <SectionHeader title="Settings" />
           <Card className="border-none shadow-sm overflow-hidden">
             <CardContent className="p-0">
-              <FeatureItem 
+              <FeatureItem
                 title="Preferred stores"
-                onClick={() => console.log("Navigate to Preferred Stores")}
+                onClick={() => router.push("/profile/settings/stores")}
               />
-              <FeatureItem 
+              <FeatureItem
                 title="Diet preferences"
-                onClick={() => console.log("Navigate to Diet Preferences")}
+                onClick={() => router.push("/profile/settings/diet")}
+              />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* 3. INTEGRATIONS SECTION */}
+        <section className="space-y-1">
+          <SectionHeader title="Integrations" />
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardContent className="p-0">
+              <FeatureItem
+                title="Notification preferences"
+                onClick={() => router.push("/profile/integrations/notifications")}
+              />
+              <FeatureItem
+                title="Roommate / sharing mode"
+                dotColor="bg-purple-500"
+                onClick={() => router.push("/profile/integrations/sharing")}
+              />
+              <FeatureItem
+                title="Google Calendar sync"
+                dotColor="bg-blue-500"
+                onClick={() => router.push("/profile/integrations/calendars")}
+              />
+              <FeatureItem
+                title="Apple Calendar + Siri"
+                dotColor="bg-blue-500"
+                onClick={() => router.push("/profile/integrations/calendars")}
+              />
+              <FeatureItem
+                title="WhatsApp shopping list share"
+                dotColor="bg-green-500"
+                onClick={() => router.push("/profile/integrations/notifications")}
               />
             </CardContent>
           </Card>
@@ -141,8 +142,8 @@ export default function ProfilePage() {
 
         {/* LOGOUT */}
         <section className="pt-4">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="w-full text-destructive hover:text-destructive hover:bg-destructive/10 h-14 rounded-2xl flex items-center justify-center gap-2 font-bold"
             onClick={handleLogout}
           >
