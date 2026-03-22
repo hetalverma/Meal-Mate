@@ -103,15 +103,6 @@ export default function ProfilePage() {
                 title="Diet preferences"
                 onClick={() => router.push("/profile/settings/diet")}
               />
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* 3. INTEGRATIONS SECTION */}
-        <section className="space-y-1">
-          <SectionHeader title="Integrations" />
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0">
               <FeatureItem
                 title="Notification preferences"
                 onClick={() => router.push("/profile/integrations/notifications")}
@@ -121,6 +112,15 @@ export default function ProfilePage() {
                 dotColor="bg-purple-500"
                 onClick={() => router.push("/profile/integrations/sharing")}
               />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* 3. INTEGRATIONS SECTION */}
+        <section className="space-y-1">
+          <SectionHeader title="Integrations" />
+          <Card className="border-none shadow-sm overflow-hidden">
+            <CardContent className="p-0">
               <FeatureItem
                 title="Google Calendar sync"
                 dotColor="bg-blue-500"
