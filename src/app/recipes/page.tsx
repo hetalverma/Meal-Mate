@@ -20,10 +20,13 @@ import {
   Facebook,
   ChevronRight,
   Bookmark,
-  Zap
+  Zap,
+  Loader2,
+  Sparkles
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import {
   Dialog,
@@ -35,6 +38,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { aiRecipeExtractor } from "@/ai/flows/ai-recipe-extractor";
+import { useToast } from "@/hooks/use-toast";
 
 const categories = ["All", "Breakfast", "Lunch", "Dinner", "Snacks", "Vegan"];
 const collections = [
@@ -44,7 +49,11 @@ const collections = [
 ];
 
 export default function RecipesPage() {
+  const router = useRouter();
+  const { toast } = useToast();
   const [importUrl, setImportUrl] = React.useState("");
+  const [isExtracting, setIsExtracting] = React.useState(false);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
   
   const recipes = [
     { 
@@ -75,6 +84,40 @@ export default function RecipesPage() {
       cuisine: "French"
     },
   ];
+
+  const handleImportRecipe = async () => {
+    if (!importUrl) return;
+    
+    setIsExtracting(true);
+    try {
+      const extractedRecipe = await aiRecipeExtractor({ url: importUrl });
+      
+      // For the MVP, we'll store the extracted recipe in localStorage to simulate "saving"
+      // and redirect to a generic detail view or just show a success message.
+      const savedRecipes = JSON.parse(localStorage.getItem('mealmate_imported_recipes') || '[]');
+      const newId = `imported-${Date.now()}`;
+      localStorage.setItem('mealmate_imported_recipes', JSON.stringify([...savedRecipes, { ...extractedRecipe, id: newId }]));
+
+      toast({
+        title: "Recipe Imported!",
+        description: `Successfully extracted "${extractedRecipe.title}"`,
+      });
+      
+      setImportUrl("");
+      setDialogOpen(false);
+      
+      // In a real app, we'd redirect to the new ID
+      // router.push(`/recipes/${newId}`);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Extraction Failed",
+        description: "Could not parse the recipe from that link. Try another one.",
+      });
+    } finally {
+      setIsExtracting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen pb-24 bg-background">
@@ -193,7 +236,7 @@ export default function RecipesPage() {
         </section>
 
         {/* Floating Action Button for Import */}
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="fixed bottom-24 right-6 h-14 w-14 rounded-2xl shadow-2xl z-40 group">
               <Plus className="h-6 w-6 transition-transform group-hover:rotate-90" />
@@ -217,8 +260,12 @@ export default function RecipesPage() {
                     placeholder="Paste YouTube, IG, or FB link..." 
                     value={importUrl}
                     onChange={(e) => setImportUrl(e.target.value)}
+                    disabled={isExtracting}
                   />
-                  <p className="text-[10px] text-muted-foreground">AI will extract ingredients and steps from descriptions.</p>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                    <Sparkles className="h-3 w-3 text-primary" />
+                    AI will automatically extract ingredients and steps.
+                  </p>
                 </div>
                 <div className="flex justify-center gap-4 py-2">
                   <div className="flex flex-col items-center gap-1">
@@ -248,8 +295,20 @@ export default function RecipesPage() {
               </TabsContent>
             </Tabs>
             <DialogFooter className="sm:justify-start">
-              <Button type="button" className="w-full" onClick={() => setImportUrl("")}>
-                {importUrl ? "Import Recipe" : "Select Method"}
+              <Button 
+                type="button" 
+                className="w-full" 
+                onClick={handleImportRecipe}
+                disabled={!importUrl || isExtracting}
+              >
+                {isExtracting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Extracting...
+                  </>
+                ) : (
+                  "Import Recipe"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
