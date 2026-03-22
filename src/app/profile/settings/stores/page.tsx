@@ -12,7 +12,7 @@ import Image from "next/image";
 
 const INITIAL_STORES = [
   { id: "blinkit", name: "Blinkit", priority: 1, connected: true, color: "bg-yellow-400", logo: "https://logo.clearbit.com/blinkit.com" },
-  { id: "zepto", name: "Zepto", priority: 2, connected: false, color: "bg-purple-600", logo: "https://logo.clearbit.com/zeptonow.com" },
+  { id: "zepto", name: "Zepto", priority: 2, connected: false, color: "bg-purple-600", logo: "https://logo.clearbit.com/zepto.co" },
   { id: "bigbasket", name: "BigBasket", priority: 3, connected: false, color: "bg-green-600", logo: "https://logo.clearbit.com/bigbasket.com" },
   { id: "swiggy", name: "Swiggy Instamart", priority: 4, connected: false, color: "bg-orange-500", logo: "https://logo.clearbit.com/swiggy.com" },
   { id: "amazon", name: "Amazon Fresh", priority: 5, connected: false, color: "bg-black", logo: "https://logo.clearbit.com/amazon.in" },
@@ -22,7 +22,7 @@ const INITIAL_STORES = [
   { id: "countrydelight", name: "Country Delight", priority: 9, connected: false, color: "bg-emerald-500", logo: "https://logo.clearbit.com/countrydelight.in" },
   { id: "dmart", name: "Dmart", priority: 10, connected: false, color: "bg-green-700", logo: "https://logo.clearbit.com/dmartindia.com" },
   { id: "deliveroo", name: "Deliveroo", priority: 11, connected: false, color: "bg-teal-400", logo: "https://logo.clearbit.com/deliveroo.com" },
-  { id: "dunzo", name: "Dunzo", priority: 12, connected: false, color: "bg-blue-400", logo: "https://logo.clearbit.com/dunzo.com" },
+  { id: "dunzo", name: "Dunzo", priority: 12, connected: false, color: "bg-blue-400", logo: "https://logo.clearbit.com/dunzo.in" },
   { id: "licious", name: "Licious", priority: 13, connected: false, color: "bg-rose-600", logo: "https://logo.clearbit.com/licious.in" },
   { id: "milkbasket", name: "Milkbasket", priority: 14, connected: false, color: "bg-blue-600", logo: "https://logo.clearbit.com/milkbasket.com" },
   { id: "naturesbasket", name: "Nature's Basket", priority: 15, connected: false, color: "bg-lime-600", logo: "https://logo.clearbit.com/naturesbasket.co.in" },
@@ -32,6 +32,7 @@ const INITIAL_STORES = [
 export default function PreferredStoresPage() {
   const router = useRouter();
   const [stores, setStores] = React.useState(INITIAL_STORES);
+  const [imageErrors, setImageErrors] = React.useState<Record<string, boolean>>({});
 
   const toggleConnect = (id: string) => {
     setStores(prev => prev.map(store => 
@@ -59,27 +60,30 @@ export default function PreferredStoresPage() {
                 <div key={store.id} className="flex items-center gap-3 p-4 hover:bg-muted/30 transition-all group">
                   <GripVertical className="h-4 w-4 text-muted-foreground/40 cursor-grab shrink-0 group-hover:text-muted-foreground" />
                   
-                  {/* Brand Logo */}
+                  {/* Brand Logo Container */}
                   <div className={cn(
-                    "h-10 w-10 rounded-xl flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105 overflow-hidden border",
+                    "h-12 w-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 transition-transform group-hover:scale-105 overflow-hidden border relative",
                     store.color
                   )}>
-                    <Image 
-                      src={store.logo} 
-                      alt={store.name} 
-                      width={40} 
-                      height={40} 
-                      className="object-cover"
-                      onError={(e) => {
-                        // Fallback to store icon if logo fails to load
-                        const target = e.target as HTMLImageElement;
-                        target.style.display = 'none';
-                      }}
-                    />
-                    <Store className="h-5 w-5 text-white absolute" style={{ zIndex: -1 }} />
+                    {!imageErrors[store.id] ? (
+                      <div className="relative w-full h-full bg-white">
+                        <Image 
+                          src={store.logo} 
+                          alt={store.name} 
+                          fill
+                          sizes="48px"
+                          className="object-contain p-2"
+                          onError={() => {
+                            setImageErrors(prev => ({ ...prev, [store.id]: true }));
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <Store className="h-6 w-6 text-white" />
+                    )}
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 ml-1">
                     <p className="font-bold text-sm truncate">{store.name}</p>
                     <p className="text-[10px] text-muted-foreground font-medium">Priority #{index + 1}</p>
                   </div>
@@ -88,7 +92,7 @@ export default function PreferredStoresPage() {
                     size="sm" 
                     variant={store.connected ? "secondary" : "outline"}
                     className={cn(
-                      "h-8 text-[10px] font-bold uppercase rounded-full px-3 transition-all",
+                      "h-8 text-[10px] font-bold uppercase rounded-full px-3 transition-all shrink-0",
                       store.connected ? "bg-green-100 text-green-700 hover:bg-green-200 border-none" : "border-primary/20 text-primary hover:bg-primary/5"
                     )}
                     onClick={() => toggleConnect(store.id)}
