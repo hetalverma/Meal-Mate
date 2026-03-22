@@ -5,7 +5,7 @@ import { GlobalHeader } from "@/components/global-header";
 import { BottomNav } from "@/components/navigation/bottom-nav";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   Search, 
@@ -14,30 +14,16 @@ import {
   Users, 
   Flame, 
   Heart, 
-  Plus, 
-  Youtube, 
-  Instagram, 
-  Facebook,
   ChevronRight,
   Bookmark,
   Zap,
   Loader2,
-  Sparkles
+  Sparkles,
+  Link as LinkIcon
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { aiRecipeExtractor } from "@/ai/flows/ai-recipe-extractor";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,11 +35,9 @@ const collections = [
 ];
 
 export default function RecipesPage() {
-  const router = useRouter();
   const { toast } = useToast();
   const [importUrl, setImportUrl] = React.useState("");
   const [isExtracting, setIsExtracting] = React.useState(false);
-  const [dialogOpen, setDialogOpen] = React.useState(false);
   
   const recipes = [
     { 
@@ -92,8 +76,6 @@ export default function RecipesPage() {
     try {
       const extractedRecipe = await aiRecipeExtractor({ url: importUrl });
       
-      // For the MVP, we'll store the extracted recipe in localStorage to simulate "saving"
-      // and redirect to a generic detail view or just show a success message.
       const savedRecipes = JSON.parse(localStorage.getItem('mealmate_imported_recipes') || '[]');
       const newId = `imported-${Date.now()}`;
       localStorage.setItem('mealmate_imported_recipes', JSON.stringify([...savedRecipes, { ...extractedRecipe, id: newId }]));
@@ -104,15 +86,11 @@ export default function RecipesPage() {
       });
       
       setImportUrl("");
-      setDialogOpen(false);
-      
-      // In a real app, we'd redirect to the new ID
-      // router.push(`/recipes/${newId}`);
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Extraction Failed",
-        description: "Could not parse the recipe from that link. Try another one.",
+        description: "Could not parse the recipe. Ensure the link is valid.",
       });
     } finally {
       setIsExtracting(false);
@@ -133,6 +111,52 @@ export default function RecipesPage() {
           <Button variant="outline" size="icon" className="h-10 w-10 border-none shadow-sm bg-white">
             <Filter className="h-4 w-4" />
           </Button>
+        </section>
+
+        {/* AI Magic Import Section */}
+        <section>
+          <Card className="border-none shadow-md bg-gradient-to-br from-primary/5 to-secondary/5 border-l-4 border-l-primary overflow-hidden">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-sm font-bold flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                AI Recipe Import
+              </CardTitle>
+              <CardDescription className="text-[11px]">
+                Paste a social media video link to extract the recipe instantly.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-3">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <LinkIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Paste YouTube, IG, or FB link..." 
+                    className="pl-9 h-10 bg-white/80 border-primary/10 focus-visible:ring-primary/20"
+                    value={importUrl}
+                    onChange={(e) => setImportUrl(e.target.value)}
+                    disabled={isExtracting}
+                  />
+                </div>
+                <Button 
+                  onClick={handleImportRecipe}
+                  disabled={!importUrl || isExtracting}
+                  className="h-10 px-4 font-bold shadow-sm"
+                >
+                  {isExtracting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "Import"
+                  )}
+                </Button>
+              </div>
+              {isExtracting && (
+                <p className="text-[10px] text-primary font-medium animate-pulse flex items-center gap-1.5">
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                  AI is watching and extracting details...
+                </p>
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         {/* Quick Collections */}
@@ -157,10 +181,6 @@ export default function RecipesPage() {
                 </CardContent>
               </Card>
             ))}
-            <Button variant="outline" className="border-dashed border-2 h-auto py-6 shrink-0 min-w-[100px] flex flex-col gap-1 rounded-xl">
-              <Plus className="h-4 w-4 text-muted-foreground" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase">New</span>
-            </Button>
           </div>
         </section>
 
@@ -234,85 +254,6 @@ export default function RecipesPage() {
             )
           })}
         </section>
-
-        {/* Floating Action Button for Import */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="fixed bottom-24 right-6 h-14 w-14 rounded-2xl shadow-2xl z-40 group">
-              <Plus className="h-6 w-6 transition-transform group-hover:rotate-90" />
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Save New Recipe</DialogTitle>
-              <DialogDescription>
-                Import from social media or add manually.
-              </DialogDescription>
-            </DialogHeader>
-            <Tabs defaultValue="social" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="social">Import Link</TabsTrigger>
-                <TabsTrigger value="manual">Manual Entry</TabsTrigger>
-              </TabsList>
-              <TabsContent value="social" className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Input 
-                    placeholder="Paste YouTube, IG, or FB link..." 
-                    value={importUrl}
-                    onChange={(e) => setImportUrl(e.target.value)}
-                    disabled={isExtracting}
-                  />
-                  <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                    <Sparkles className="h-3 w-3 text-primary" />
-                    AI will automatically extract ingredients and steps.
-                  </p>
-                </div>
-                <div className="flex justify-center gap-4 py-2">
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                      <Youtube className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-bold">YouTube</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
-                      <Instagram className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-bold">Instagram</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-1">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                      <Facebook className="h-5 w-5" />
-                    </div>
-                    <span className="text-[10px] font-bold">Facebook</span>
-                  </div>
-                </div>
-              </TabsContent>
-              <TabsContent value="manual" className="pt-4 text-center py-8">
-                <Plus className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
-                <p className="text-sm font-medium text-muted-foreground">Standardized form for manual recipes.</p>
-                <Button variant="outline" size="sm" className="mt-4">Start Form</Button>
-              </TabsContent>
-            </Tabs>
-            <DialogFooter className="sm:justify-start">
-              <Button 
-                type="button" 
-                className="w-full" 
-                onClick={handleImportRecipe}
-                disabled={!importUrl || isExtracting}
-              >
-                {isExtracting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Extracting...
-                  </>
-                ) : (
-                  "Import Recipe"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </main>
 
       <BottomNav />
