@@ -75,22 +75,17 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold font-headline">Alex Miller</h2>
             <p className="text-sm text-muted-foreground">miller.alex@google.com</p>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="mt-2 rounded-full px-6 font-bold border-primary text-primary hover:bg-primary/5"
+            onClick={() => router.push("/profile/account")}
+          >
+            Edit Profile
+          </Button>
         </section>
 
-        {/* 1. ACCOUNT SECTION */}
-        <section className="space-y-1">
-          <SectionHeader title="Account" />
-          <Card className="border-none shadow-sm overflow-hidden">
-            <CardContent className="p-0">
-              <FeatureItem
-                title="Profile management"
-                onClick={() => router.push("/profile/account")}
-              />
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* 2. SETTINGS SECTION */}
+        {/* 1. SETTINGS SECTION */}
         <section className="space-y-1">
           <SectionHeader title="Settings" />
           <Card className="border-none shadow-sm overflow-hidden">
@@ -121,7 +116,7 @@ export default function ProfilePage() {
           </Card>
         </section>
 
-        {/* 3. INTEGRATIONS SECTION */}
+        {/* 2. INTEGRATIONS SECTION */}
         <section className="space-y-1">
           <SectionHeader title="Integrations" />
           <Card className="border-none shadow-sm overflow-hidden">
