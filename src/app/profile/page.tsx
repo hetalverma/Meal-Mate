@@ -7,18 +7,35 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Camera } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const { toast } = useToast();
   const avatarImg = PlaceHolderImages.find((img) => img.id === "avatar-user");
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleLogout = () => {
     localStorage.removeItem("mealmate_onboarded");
     router.push("/");
+  };
+
+  const handlePhotoEdit = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "Photo Updated",
+        description: "Your profile picture has been successfully changed.",
+      });
+    }
   };
 
   const SectionHeader = ({ title, count }: { title: string; count?: string }) => (
@@ -67,10 +84,27 @@ export default function ProfilePage() {
       <main className="p-4 space-y-8 max-w-md mx-auto">
         {/* User Profile Summary */}
         <section className="flex flex-col items-center gap-3 py-4">
-          <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
-            <AvatarImage src={avatarImg?.imageUrl || ""} />
-            <AvatarFallback>AM</AvatarFallback>
-          </Avatar>
+          <div className="relative">
+            <Avatar className="h-24 w-24 border-4 border-white shadow-xl">
+              <AvatarImage src={avatarImg?.imageUrl || ""} />
+              <AvatarFallback>AM</AvatarFallback>
+            </Avatar>
+            <Button
+              size="icon"
+              variant="secondary"
+              className="absolute bottom-0 right-0 h-8 w-8 rounded-full border-2 border-white shadow-lg bg-white hover:bg-muted"
+              onClick={handlePhotoEdit}
+            >
+              <Camera className="h-4 w-4 text-primary" />
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept="image/*"
+              onChange={handleFileChange}
+            />
+          </div>
           <div className="text-center">
             <h2 className="text-xl font-bold font-headline">Alex Miller</h2>
             <p className="text-sm text-muted-foreground">miller.alex@google.com</p>
