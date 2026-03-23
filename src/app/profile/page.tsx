@@ -112,6 +112,11 @@ export default function ProfilePage() {
                 dotColor="bg-purple-500"
                 onClick={() => router.push("/profile/integrations/sharing")}
               />
+              <FeatureItem
+                title="App theme"
+                dotColor="bg-slate-500"
+                onClick={() => router.push("/profile/settings/theme")}
+              />
             </CardContent>
           </Card>
         </section>
