@@ -122,7 +122,7 @@ export default function ProfilePage() {
           <Card className="border-none shadow-sm overflow-hidden">
             <CardContent className="p-0">
               <FeatureItem
-                title="Google Calendar sync"
+                title="Calendar Sync"
                 dotColor="bg-blue-500"
                 onClick={() => router.push("/profile/integrations/calendars")}
               />
