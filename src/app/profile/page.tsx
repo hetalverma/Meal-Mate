@@ -127,11 +127,6 @@ export default function ProfilePage() {
                 onClick={() => router.push("/profile/integrations/calendars")}
               />
               <FeatureItem
-                title="Apple Calendar + Siri"
-                dotColor="bg-blue-500"
-                onClick={() => router.push("/profile/integrations/calendars")}
-              />
-              <FeatureItem
                 title="WhatsApp shopping list share"
                 dotColor="bg-green-500"
                 onClick={() => router.push("/profile/integrations/notifications")}
